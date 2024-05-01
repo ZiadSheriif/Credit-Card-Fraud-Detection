@@ -33,14 +33,26 @@ class DataPreprocessor:
         
     def scale_features(self):
         rob_scaler = RobustScaler()
-        self.X_train = rob_scaler.fit_transform(self.X_train)
-        self.X_test = rob_scaler.transform(self.X_test)
+        self.df['scaled_amount'] = rob_scaler.fit_transform(self.df['Amount'].values.reshape(-1,1))
+        self.df['scaled_time'] = rob_scaler.fit_transform(self.df['Time'].values.reshape(-1,1))
+        self.df.drop(['Time','Amount'], axis=1, inplace=True)
+        
+        scaled_amount = self.df['scaled_amount']
+        scaled_time = self.df['scaled_time']
+        
+        self.df.drop(['scaled_amount', 'scaled_time'], axis=1, inplace=True)
+        self.df.insert(0, 'scaled_amount', scaled_amount)
+        self.df.insert(1, 'scaled_time', scaled_time)
+        
+        print(self.df.head())
+        
+        
+        return self.df
         
         
         
-        
-        
-    def remove_outliers(self, features):
+    def remove_outliers(self, df,features):
+        self.df = df
         for feature in features:
             fraud_values = self.df[feature].loc[self.df['Class'] == 1].values
             q25, q75 = np.percentile(fraud_values, 25), np.percentile(fraud_values, 75)
@@ -65,6 +77,4 @@ class DataPreprocessor:
     def preprocess(self):
         self.read_dataset()
         self.check_missing_values()
-        self.split_data()
-        self.scale_features()
         return self.df

@@ -5,17 +5,24 @@ from imblearn.under_sampling import NearMiss
 import time
 from sklearn.decomposition import PCA, TruncatedSVD
 from sklearn.manifold import TSNE
+import pandas as pd
 
-class FeatureEngineer:
-    def __init__(self):
-        self.smote = SMOTE()
-        self.near_miss = NearMiss()
+class FeatureExtraction:
+    def __init__(self,df):
+       self.df=df
         
     def oversample(self, X_train, y_train):
         return self.smote.fit_resample(X_train, y_train)
         
-    def undersample(self, X_train, y_train):
-        return self.near_miss.fit_resample(X_train, y_train)
+    def undersample(self):
+        self.df=self.df.sample(frac=1)
+        
+        fraud_df = self.df.loc[self.df['Class'] == 1]
+        non_fraud_df = self.df.loc[self.df['Class'] == 0][:492]
+        normal_distributed_df = pd.concat([fraud_df, non_fraud_df])
+        new_df = normal_distributed_df.sample(frac=1, random_state=42)
+        self.df=new_df
+        return new_df
         
         
     def reduce_dimensions(self):
