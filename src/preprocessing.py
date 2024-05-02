@@ -57,6 +57,7 @@ class DataPreprocessor:
             fraud_values = self.df[feature].loc[self.df['Class'] == 1].values
             q25, q75 = np.percentile(fraud_values, 25), np.percentile(fraud_values, 75)
             iqr = q75 - q25
+            print(f'Quartile 25: {q25} | Quartile 75: {q75}')
 
             cut_off = iqr * 1.5
             lower, upper = q25 - cut_off, q75 + cut_off
