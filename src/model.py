@@ -8,7 +8,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score,StratifiedShuffleSplit,GridSearchCV,cross_val_predict
 from imblearn.under_sampling import NearMiss
 from imblearn.pipeline import make_pipeline as imbalanced_make_pipeline
-from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score,roc_curve
+from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score,roc_curve,confusion_matrix,classification_report
+import seaborn as sns
 from sklearn.model_selection import learning_curve
 import numpy as np
 from typing import Counter
@@ -242,19 +243,19 @@ class ModelTrainer:
         tree_pred = cross_val_predict(self.estimator["Decision Tree"], X_train, y_train, cv=5)
         rf_pred = cross_val_predict(self.estimator["Random Forest"], X_train, y_train, cv=5)
 
-        log_fpr, log_tpr, _ = roc_curve(y_train, log_reg_pred)
-        knear_fpr, knear_tpr, _ = roc_curve(y_train, knearst_pred)
-        svc_fpr, svc_tpr, _ = roc_curve(y_train, svc_pred)
-        tree_fpr, tree_tpr, _ = roc_curve(y_train, tree_pred)
-        rf_fpr, rf_tpr, _ = roc_curve(y_train, rf_pred)
+        self.log_fpr, self.log_tpr, _ = roc_curve(y_train, log_reg_pred)
+        self.knear_fpr, self.knear_tpr, _ = roc_curve(y_train, knearst_pred)
+        self.svc_fpr, self.svc_tpr, _ = roc_curve(y_train, svc_pred)
+        self.tree_fpr, self.tree_tpr, _ = roc_curve(y_train, tree_pred)
+        self.rf_fpr, self.rf_tpr, _ = roc_curve(y_train, rf_pred)
 
         plt.figure(figsize=(16,8))
         plt.title('ROC Curve \n Top 5 Classifiers', fontsize=18)
-        plt.plot(log_fpr, log_tpr, label='Logistic Regression Classifier Score: {:.4f}'.format(roc_auc_score(y_train, log_reg_pred)))
-        plt.plot(knear_fpr, knear_tpr, label='KNearst Neighbors Classifier Score: {:.4f}'.format(roc_auc_score(y_train, knearst_pred)))
-        plt.plot(svc_fpr, svc_tpr, label='Support Vector Classifier Score: {:.4f}'.format(roc_auc_score(y_train, svc_pred)))
-        plt.plot(tree_fpr, tree_tpr, label='Decision Tree Classifier Score: {:.4f}'.format(roc_auc_score(y_train, tree_pred)))
-        plt.plot(rf_fpr, rf_tpr, label='Random Forest Classifier Score: {:.4f}'.format(roc_auc_score(y_train, rf_pred)))
+        plt.plot(self.log_fpr, self.log_tpr, label='Logistic Regression Classifier Score: {:.4f}'.format(roc_auc_score(y_train, log_reg_pred)))
+        plt.plot(self.knear_fpr, self.knear_tpr, label='KNearst Neighbors Classifier Score: {:.4f}'.format(roc_auc_score(y_train, knearst_pred)))
+        plt.plot(self.svc_fpr, self.svc_tpr, label='Support Vector Classifier Score: {:.4f}'.format(roc_auc_score(y_train, svc_pred)))
+        plt.plot(self.tree_fpr, self.tree_tpr, label='Decision Tree Classifier Score: {:.4f}'.format(roc_auc_score(y_train, tree_pred)))
+        plt.plot(self.rf_fpr, self.rf_tpr, label='Random Forest Classifier Score: {:.4f}'.format(roc_auc_score(y_train, rf_pred)))
         plt.plot([0, 1], [0, 1], 'k--')
         plt.axis([-0.01, 1, 0, 1])
         plt.xlabel('False Positive Rate', fontsize=16)
@@ -264,6 +265,89 @@ class ModelTrainer:
                     )
         plt.legend()
         plt.show()
+        
+    def logistic_roc_curve(self):
+        plt.figure(figsize=(12,8))
+        plt.title('Logistic Regression ROC Curve', fontsize=16)
+        plt.plot(self.log_fpr, self.log_tpr, 'b-', linewidth=2)
+        plt.plot([0, 1], [0, 1], 'r--')
+        plt.xlabel('False Positive Rate', fontsize=16)
+        plt.ylabel('True Positive Rate', fontsize=16)
+        plt.axis([-0.01,1,0,1])
+        plt.show()
+        
+        
+    def confusion_matrix(self,X_test,y_test):
+    
+        self.y_pred_log = self.estimator["Logistic Regression"].predict(X_test)
+        self.y_pred_knearst = self.estimator["K Nearest Neighbors"].predict(X_test)
+        self.y_pred_svm = self.estimator["Support Vector Machine"].predict(X_test)
+        self.y_pred_tree = self.estimator["Decision Tree"].predict(X_test)
+        self.y_pred_rf = self.estimator["Random Forest"].predict(X_test)
+
+        # get confusio matirx for each classifer
+        log_reg_cf = confusion_matrix(y_test, self.y_pred_log)
+        knearst_cf = confusion_matrix(y_test, self.y_pred_knearst)
+        svm_cf = confusion_matrix(y_test, self.y_pred_svm)
+        tree_cf = confusion_matrix(y_test, self.y_pred_tree)
+        rf_cf = confusion_matrix(y_test, self.y_pred_rf)
+        
+        
+        fig, ax = plt.subplots(2, 3,figsize=(22,12))
+        sns.heatmap(log_reg_cf, ax=ax[0][0], annot=True, cmap=plt.cm.copper)
+        ax[0, 0].set_title("Logistic Regression \n Confusion Matrix", fontsize=14)
+        ax[0, 0].set_xticklabels(['', ''], fontsize=14, rotation=90)
+        ax[0, 0].set_yticklabels(['', ''], fontsize=14, rotation=360)
+
+        sns.heatmap(knearst_cf, ax=ax[0][1], annot=True, cmap=plt.cm.copper)
+        ax[0][1].set_title("KNearsNeighbors \n Confusion Matrix", fontsize=14)
+        ax[0][1].set_xticklabels(['', ''], fontsize=14, rotation=90)
+        ax[0][1].set_yticklabels(['', ''], fontsize=14, rotation=360)
+
+        sns.heatmap(svm_cf, ax=ax[1][0], annot=True, cmap=plt.cm.copper)
+        ax[1][0].set_title("Suppor Vector Classifier \n Confusion Matrix", fontsize=14)
+        ax[1][0].set_xticklabels(['', ''], fontsize=14, rotation=90)
+        ax[1][0].set_yticklabels(['', ''], fontsize=14, rotation=360)
+
+        sns.heatmap(tree_cf, ax=ax[1][1], annot=True, cmap=plt.cm.copper)
+        ax[1][1].set_title("DecisionTree Classifier \n Confusion Matrix", fontsize=14)
+        ax[1][1].set_xticklabels(['', ''], fontsize=14, rotation=90)
+        ax[1][1].set_yticklabels(['', ''], fontsize=14, rotation=360)
+        
+        
+        sns.heatmap(rf_cf, ax=ax[1][2], annot=True, cmap=plt.cm.copper)
+        ax[1][2].set_title("RandomForest Classifier \n Confusion Matrix", fontsize=14)
+        ax[1][2].set_xticklabels(['', ''], fontsize=14, rotation=90)
+        ax[1][2].set_yticklabels(['', ''], fontsize=14, rotation=360)
+        
+        plt.show()
+        
+    def statistics_of_classifiers(self,y_test):
+    
+        print('Logistic Regression:')
+        print(classification_report(y_test, self.y_pred_log))
+        print('---'*50)
+        
+        print('KNears Neighbors:')
+        print(classification_report(y_test, self.y_pred_knearst))
+        print('---'*50)
+        
+        
+        print('Support Vector Classifier:')
+        print(classification_report(y_test, self.y_pred_svm))
+        print('---'*50)
+        
+        print('Decision Tree Classifier:')
+        print(classification_report(y_test, self.y_pred_tree))
+        print('---'*50)
+        
+        print('Random Forest Classifier:')
+        print(classification_report(y_test, self.y_pred_rf))
+        print('---'*50)
+
+
+
+
 
         
 #! I think we will use SVM , Decision Tree and Random Forest

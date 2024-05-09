@@ -69,6 +69,9 @@ def run():
     train.plot_learning_curve(X_train, y_train, cv=cv, n_jobs=4)
     train.calculate_roc_auc_scores(X_train, y_train)
     train.graph_roc_curve_multiple(X_train, y_train)
+    train.logistic_roc_curve()
+    train.confusion_matrix(X_test, y_test)
+    train.statistics_of_classifiers( y_test)
 
 
 if __name__ == "__main__":

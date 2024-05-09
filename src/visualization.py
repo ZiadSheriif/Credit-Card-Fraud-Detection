@@ -136,25 +136,7 @@ class DataDistribution:
         ax3.legend(handles=[blue_patch, red_patch])
 
         plt.show()
-        
-    def graph_roc_curve_multiple(log_fpr, log_tpr, knear_fpr, knear_tpr, svc_fpr, svc_tpr, tree_fpr, tree_tpr, rf_fpr, rf_tpr):
-        plt.figure(figsize=(16,8))
-        plt.title('ROC Curve \n Top 5 Classifiers', fontsize=18)
-        plt.plot(log_fpr, log_tpr, label='Logistic Regression Classifier Score: {:.4f}'.format(roc_auc_score(y_train, log_reg_pred)))
-        plt.plot(knear_fpr, knear_tpr, label='KNearst Neighbors Classifier Score: {:.4f}'.format(roc_auc_score(y_train, knears_pred)))
-        plt.plot(svc_fpr, svc_tpr, label='Support Vector Classifier Score: {:.4f}'.format(roc_auc_score(y_train, svc_pred)))
-        plt.plot(tree_fpr, tree_tpr, label='Decision Tree Classifier Score: {:.4f}'.format(roc_auc_score(y_train, tree_pred)))
-        plt.plot(rf_fpr, rf_tpr, label='Random Forest Classifier Score: {:.4f}'.format(roc_auc_score(y_train, rf_pred)))
-        plt.plot([0, 1], [0, 1], 'k--')
-        plt.axis([-0.01, 1, 0, 1])
-        plt.xlabel('False Positive Rate', fontsize=16)
-        plt.ylabel('True Positive Rate', fontsize=16)
-        plt.annotate('Minimum ROC Score of 50% \n (This is the minimum score to get)', xy=(0.5, 0.5), xytext=(0.6, 0.3),
-                    arrowprops=dict(facecolor='#6E726D', shrink=0.05),
-                    )
-        plt.legend()
 
-        plt.show()
 
 
 
