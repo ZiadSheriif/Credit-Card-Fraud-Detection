@@ -1,7 +1,4 @@
 # feature_engineering.py
-
-from imblearn.over_sampling import SMOTE
-from imblearn.under_sampling import NearMiss
 import time
 from sklearn.decomposition import PCA, TruncatedSVD
 from sklearn.manifold import TSNE
