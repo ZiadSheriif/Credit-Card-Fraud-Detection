@@ -3,7 +3,7 @@ from data_splitter import *
 from model import *
 from visualization import *
 from feature_extraction import *
-from sklearn.model_selection import ShuffleSplit
+from sklearn.model_selection import ShuffleSplit, StratifiedKFold
 
 PATH = "../dataset/creditcard.csv"
 
@@ -12,6 +12,22 @@ def run():
     # Data Preprocessing
     df = DataPreprocessor(PATH)
     df.preprocess()
+    
+    
+    X = df.df.drop('Class', axis=1)
+    y = df.df['Class']
+
+    stf = StratifiedKFold(n_splits=5, random_state=None, shuffle=False)
+
+    for train_index, test_index in stf.split(X, y):
+        print("Train:", train_index, "Test:", test_index)
+        original_Xtrain, original_Xtest = X.iloc[train_index], X.iloc[test_index]
+        original_ytrain, original_ytest = y.iloc[train_index], y.iloc[test_index]
+        
+    original_Xtrain = original_Xtrain.values
+    original_Xtest = original_Xtest.values
+    original_ytrain = original_ytrain.values
+    original_ytest = original_ytest.values
 
     # data distribution
     vis = DataDistribution(df.df)
@@ -72,6 +88,10 @@ def run():
     train.logistic_roc_curve()
     train.confusion_matrix(X_test, y_test)
     train.statistics_of_classifiers( y_test)
+    
+    # make over sampling in order not to skip features
+    train.smote_on_logistic_regression(original_Xtrain, original_Xtest, original_ytrain, original_ytest,stf)
+    train.sampling_by_smote(original_Xtrain, original_ytrain, original_Xtest, original_ytest, X_test, y_test)
 
 
 if __name__ == "__main__":

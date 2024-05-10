@@ -5,15 +5,17 @@ from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import cross_val_score,StratifiedShuffleSplit,GridSearchCV,cross_val_predict
+from sklearn.model_selection import cross_val_score,StratifiedShuffleSplit,GridSearchCV,cross_val_predict,StratifiedKFold,RandomizedSearchCV
 from imblearn.under_sampling import NearMiss
+from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import make_pipeline as imbalanced_make_pipeline
-from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score,roc_curve,confusion_matrix,classification_report
+from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score,roc_curve,confusion_matrix,classification_report,accuracy_score
 import seaborn as sns
 from sklearn.model_selection import learning_curve
 import numpy as np
 from typing import Counter
 import matplotlib.pyplot as plt
+import pandas as pd
 
 class ModelTrainer:
     def __init__(self):
@@ -331,3 +333,80 @@ class ModelTrainer:
         print('Random Forest Classifier:')
         print(classification_report(y_test, self.y_pred_rf))
         print('---'*50)
+    
+    def smote_on_logistic_regression(self, original_Xtrain, original_Xtest, original_ytrain, original_ytest, stf):
+    
+    
+        print('Length of X (train): {} | Length of y (train): {}'.format(len(original_Xtrain), len(original_ytrain)))
+        print('Length of X (test): {} | Length of y (test): {}'.format(len(original_Xtest), len(original_ytest)))
+        accuracy_lst = []
+        precision_lst = []
+        recall_lst = []
+        f1_lst = []
+        auc_lst = []
+        log_reg_params = {"penalty": ['l1', 'l2'], 'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000]}
+        
+        # self.log_reg = LogisticRegression()
+        rand_log_reg = RandomizedSearchCV(LogisticRegression(), log_reg_params, n_iter=4)
+        
+        for train, test in stf.split(original_Xtrain, original_ytrain):
+            pipeline = imbalanced_make_pipeline(SMOTE(sampling_strategy='minority'), rand_log_reg)
+            model=pipeline.fit(original_Xtrain[train], original_ytrain[train])
+            self.best_est = rand_log_reg.best_estimator_
+            prediction = self.best_est.predict(original_Xtrain[test])
+            
+            accuracy_lst.append(pipeline.score(original_Xtrain[test], original_ytrain[test]))
+            precision_lst.append(precision_score(original_ytrain[test], prediction))
+            recall_lst.append(recall_score(original_ytrain[test], prediction))
+            f1_lst.append(f1_score(original_ytrain[test], prediction))
+            auc_lst.append(roc_auc_score(original_ytrain[test], prediction))
+        print('---' * 40)
+        print('')
+        print("accuracy: {}".format(np.mean(accuracy_lst)))
+        print("precision: {}".format(np.mean(precision_lst)))
+        print("recall: {}".format(np.mean(recall_lst)))
+        print("f1: {}".format(np.mean(f1_lst)))
+        print('---' * 40)
+                
+    
+    
+    def sampling_by_smote(self,original_Xtrain, original_ytrain, original_Xtest, original_ytest, X_test, y_test):
+    
+    
+        # SMOTE Technique (OverSampling) After splitting and Cross Validating
+        sm = SMOTE(sampling_strategy='minority', random_state=42)
+
+        # This will be the data were we are going to 
+        Xsm_train, ysm_train = sm.fit_resample(original_Xtrain, original_ytrain)
+        
+        log_reg_sm=self.estimator["Logistic Regression"]
+        log_reg_sm.fit(Xsm_train, ysm_train)
+        
+        # Logistic Regression with Under-Sampling
+        log_reg_best= self.estimator["Logistic Regression"]
+        log_reg_best.fit(Xsm_train, ysm_train)
+        y_pred = log_reg_best.predict(X_test)
+        undersample_score = accuracy_score(y_test, y_pred)
+        
+        
+        
+        # Logistic Regression with SMOTE Technique (Better accuracy with SMOTE t)
+        y_pred_sm = self.best_est.predict(original_Xtest)
+        oversample_score = accuracy_score(original_ytest, y_pred_sm)
+        
+        data_grid = {'Technique': ['Random UnderSampling', 'Oversampling (SMOTE)'], 'Score': [undersample_score, oversample_score]}
+        final_df = pd.DataFrame(data=data_grid)
+        
+        # plotting
+        score=final_df['Score']
+        final_df.drop('Score', axis=1, inplace=True)
+        # plot score in %
+        final_df['Score'] = score*100
+        final_df.plot(kind='bar', figsize=(8, 4))
+        print("Final Dataframe: ", final_df)
+        
+        plt.figure(figsize=(8, 4))
+        sns.barplot(x='Technique', y='Score', data=final_df)
+        plt.title('Comparison of the Two Techniques')
+        plt.show()
+        
