@@ -344,8 +344,7 @@ class ModelTrainer:
         recall_lst = []
         f1_lst = []
         auc_lst = []
-        log_reg_params = {"penalty": ['l1', 'l2'], 'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000]}
-        
+        log_reg_params = {"penalty": ['l1', 'l2'], 'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000], 'solver': ['liblinear']}        
         # self.log_reg = LogisticRegression()
         rand_log_reg = RandomizedSearchCV(LogisticRegression(), log_reg_params, n_iter=4)
         
@@ -378,16 +377,16 @@ class ModelTrainer:
 
         # This will be the data were we are going to 
         Xsm_train, ysm_train = sm.fit_resample(original_Xtrain, original_ytrain)
+                
         
-        log_reg_sm=self.estimator["Logistic Regression"]
-        log_reg_sm.fit(Xsm_train, ysm_train)
+        log_reg_best= self.estimator["Logistic Regression"]
+        print("Logistic Regression: ", log_reg_best)
+        # log_reg_best.fit(Xsm_train, ysm_train)
+        
         
         # Logistic Regression with Under-Sampling
-        log_reg_best= self.estimator["Logistic Regression"]
-        log_reg_best.fit(Xsm_train, ysm_train)
         y_pred = log_reg_best.predict(X_test)
         undersample_score = accuracy_score(y_test, y_pred)
-        
         
         
         # Logistic Regression with SMOTE Technique (Better accuracy with SMOTE t)
@@ -400,7 +399,7 @@ class ModelTrainer:
         # plotting
         score=final_df['Score']
         final_df.drop('Score', axis=1, inplace=True)
-        # plot score in %
+        
         final_df['Score'] = score*100
         final_df.plot(kind='bar', figsize=(8, 4))
         print("Final Dataframe: ", final_df)
