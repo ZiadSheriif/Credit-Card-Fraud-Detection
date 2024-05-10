@@ -19,7 +19,6 @@ class DataPreprocessor:
         print(self.df.head())
         print(self.df.describe())
         
-        
     def check_missing_values(self):
         missing_values = self.df.isnull().sum().max()
         print("Number of missing values:", missing_values)
@@ -46,10 +45,7 @@ class DataPreprocessor:
         
         print(self.df.head())
         
-        
         return self.df
-        
-        
         
     def remove_outliers(self, df,features):
         self.df = df
@@ -73,7 +69,6 @@ class DataPreprocessor:
             print('----' * 44)
 
         return self.df
-
 
     def preprocess(self):
         self.read_dataset()

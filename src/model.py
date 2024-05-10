@@ -15,7 +15,6 @@ import numpy as np
 from typing import Counter
 import matplotlib.pyplot as plt
 
-
 class ModelTrainer:
     def __init__(self):
         self.estimator = {}
@@ -42,9 +41,6 @@ class ModelTrainer:
             }
         }
         
-        
-        
-        
     def train_models(self, X_train, y_train):
         results = {}
         for name, model_info in self.models.items():
@@ -57,7 +53,6 @@ class ModelTrainer:
             print(f"Classifier: {name} has a training score of {round(scores.mean(), 2) * 100} % accuracy score")
             print(f"{name} Cross Validation Score: {round(scores.mean() * 100, 2)}%")
         return results
-        
         
     def undersample_and_evaluate(self, df):
         undersample_X = df.drop('Class', axis=1)
@@ -96,9 +91,6 @@ class ModelTrainer:
             undersample_auc.append(roc_auc_score(undersample_ytest, undersample_prediction))
 
         return undersample_accuracy, undersample_precision, undersample_recall, undersample_f1, undersample_auc
-        
-        
-
 
     def plot_learning_curve(self,X, y, ylim=None, cv=None,n_jobs=1, train_sizes=np.linspace(.1, 1.0, 5)):
         estimator1 = self.estimator["Logistic Regression"]
@@ -276,9 +268,7 @@ class ModelTrainer:
         plt.axis([-0.01,1,0,1])
         plt.show()
         
-        
     def confusion_matrix(self,X_test,y_test):
-    
         self.y_pred_log = self.estimator["Logistic Regression"].predict(X_test)
         self.y_pred_knearst = self.estimator["K Nearest Neighbors"].predict(X_test)
         self.y_pred_svm = self.estimator["Support Vector Machine"].predict(X_test)
@@ -291,7 +281,6 @@ class ModelTrainer:
         svm_cf = confusion_matrix(y_test, self.y_pred_svm)
         tree_cf = confusion_matrix(y_test, self.y_pred_tree)
         rf_cf = confusion_matrix(y_test, self.y_pred_rf)
-        
         
         fig, ax = plt.subplots(2, 3,figsize=(22,12))
         sns.heatmap(log_reg_cf, ax=ax[0][0], annot=True, cmap=plt.cm.copper)
@@ -314,7 +303,6 @@ class ModelTrainer:
         ax[1][1].set_xticklabels(['', ''], fontsize=14, rotation=90)
         ax[1][1].set_yticklabels(['', ''], fontsize=14, rotation=360)
         
-        
         sns.heatmap(rf_cf, ax=ax[1][2], annot=True, cmap=plt.cm.copper)
         ax[1][2].set_title("RandomForest Classifier \n Confusion Matrix", fontsize=14)
         ax[1][2].set_xticklabels(['', ''], fontsize=14, rotation=90)
@@ -332,7 +320,6 @@ class ModelTrainer:
         print(classification_report(y_test, self.y_pred_knearst))
         print('---'*50)
         
-        
         print('Support Vector Classifier:')
         print(classification_report(y_test, self.y_pred_svm))
         print('---'*50)
@@ -344,10 +331,3 @@ class ModelTrainer:
         print('Random Forest Classifier:')
         print(classification_report(y_test, self.y_pred_rf))
         print('---'*50)
-
-
-
-
-
-        
-#! I think we will use SVM , Decision Tree and Random Forest

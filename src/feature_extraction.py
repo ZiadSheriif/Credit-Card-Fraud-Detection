@@ -21,7 +21,6 @@ class FeatureExtraction:
         self.df=new_df
         return new_df
         
-        
     def reduce_dimensions(self):
         X = self.df.drop('Class', axis=1)
         y = self.df['Class']

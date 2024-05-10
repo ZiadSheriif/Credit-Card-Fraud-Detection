@@ -1,7 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import norm
-from sklearn.preprocessing import StandardScaler, RobustScaler
 import seaborn as sns
 from matplotlib import patches
 import warnings
@@ -44,7 +43,6 @@ class DataDistribution:
         plt.title('Equally Distributed Classes', fontsize=14)
         plt.show()
         
-        
     def plot_corr(self, new_df):
         f, (ax1, ax2) = plt.subplots(2, 1, figsize=(24,20))
 
@@ -58,7 +56,6 @@ class DataDistribution:
         ax2.set_title('SubSample Correlation Matrix \n (use for reference)', fontsize=14)
         plt.show()
         
-        
     def plot_neg_corr(self, new_df, features, colors=["#0101DF", "#DF0101"]):
         f, axes = plt.subplots(ncols=len(features), figsize=(20,4))
 
@@ -67,7 +64,6 @@ class DataDistribution:
             axes[i].set_title(f'{feature} vs Class Negative Correlation')
 
         plt.show()
-        
         
     def plot_pos_corr(self, new_df, features, colors=["#0101DF", "#DF0101"]):
         f, axes = plt.subplots(ncols=len(features), figsize=(20,4))
@@ -88,8 +84,6 @@ class DataDistribution:
 
         plt.show()
         
-        
-        
     def plot_outlier_reduction(self, new_df, features, colors=["#B3F9C5", "#f9c5b3"]):
         f, axes = plt.subplots(1, len(features), figsize=(20,6))
 
@@ -101,10 +95,6 @@ class DataDistribution:
                              fontsize=14)
 
         plt.show()
-        
-        
-
-
 
     def plot_clusters(self, X_reduced_tsne, X_reduced_pca, X_reduced_svd, y):
         f, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(24,6))
@@ -135,27 +125,3 @@ class DataDistribution:
         ax3.legend(handles=[blue_patch, red_patch])
 
         plt.show()
-
-
-
-
-class Scaling:
-    def __init__(self, df: pd.DataFrame):
-        self.df = df
-        self.std_scaler = StandardScaler()
-        self.rob_scaler = RobustScaler()
-
-    def scale_data(self):
-        self.df['scaled_amount'] = self.rob_scaler.fit_transform(self.df['Amount'].values.reshape(-1,1))
-        self.df['scaled_time'] = self.rob_scaler.fit_transform(self.df['Time'].values.reshape(-1,1))
-
-        self.df.drop(['Time','Amount'], axis=1, inplace=True)
-
-        scaled_amount = self.df['scaled_amount']
-        scaled_time = self.df['scaled_time']
-
-        self.df.drop(['scaled_amount', 'scaled_time'], axis=1, inplace=True)
-        self.df.insert(0, 'scaled_amount', scaled_amount)
-        self.df.insert(1, 'scaled_time', scaled_time)
-
-        return self.df
